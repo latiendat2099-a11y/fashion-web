@@ -20,7 +20,7 @@ const CATS = {
   quan: 'Quần',
   giay: 'Giày',
   dep: 'Dép',
-  vay: 'Váy'
+  balo: 'Balo'
 };
 
 app.get('/', (req, res) => {
