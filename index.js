@@ -7,7 +7,7 @@ const db = mysql.createConnection({
   host: 'fashion-db.cj20yykym4nu.ap-southeast-1.rds.amazonaws.com',
   user: 'admin',
   password: 'Fashion2024!',
-  database: 'fashion_db'
+  database: 'fashiondb'
 });
 db.connect(err => {
   if (err) { console.log(err); return; }
