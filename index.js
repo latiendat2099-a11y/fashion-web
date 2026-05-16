@@ -1,7 +1,11 @@
 const express = require('express');
 const mysql = require('mysql2');
+const { SQSClient, SendMessageCommand } = require('@aws-sdk/client-sqs');
+
 const app = express();
 app.use(express.json());
+
+const sqs = new SQSClient({ region: 'ap-southeast-1' });
 
 const db = mysql.createConnection({
   host: 'fashion-db.cj20yykym4nu.ap-southeast-1.rds.amazonaws.com',
@@ -68,7 +72,6 @@ app.get('/', (req, res) => {
 </head>
 <body style="font-family:sans-serif;padding:24px;background:#f5f5f5;margin:0">
 
-  <!-- Modal đặt hàng -->
   <div id="modal" style="display:none;position:fixed;top:0;left:0;
     width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:999;
     align-items:center;justify-content:center">
@@ -100,7 +103,6 @@ app.get('/', (req, res) => {
     </div>
   </div>
 
-  <!-- Thông báo thành công -->
   <div id="success" style="display:none;position:fixed;top:0;left:0;
     width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:999;
     align-items:center;justify-content:center">
@@ -168,16 +170,23 @@ app.get('/', (req, res) => {
   });
 });
 
-app.post('/orders', (req, res) => {
+// ===== PHẦN SỬA: Đẩy đơn hàng vào SQS thay vì lưu thẳng RDS =====
+app.post('/orders', async (req, res) => {
   const { product_id, quantity, total_price, customer_name, phone, email, address } = req.body;
-  db.query(
-    'INSERT INTO orders (product_id, quantity, total_price, customer_name, phone, email, address) VALUES (?,?,?,?,?,?,?)',
-    [product_id, quantity, total_price, customer_name, phone, email, address],
-    (err, result) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ message: 'OK', order_id: result.insertId });
-    }
-  );
+  
+  try {
+    await sqs.send(new SendMessageCommand({
+      QueueUrl: 'https://sqs.ap-southeast-1.amazonaws.com/054653532752/order-queue',
+      MessageBody: JSON.stringify({
+        product_id, quantity, total_price,
+        customer_name, phone, email, address
+      })
+    }));
+    res.json({ message: 'OK' });
+  } catch (err) {
+    console.error('SQS Error:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.listen(3000, () => console.log('Server chạy tại port 3000'));
