@@ -68,7 +68,7 @@ app.get('/', (req, res) => {
 <html><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Fashion Shop</title>
+  <title>Thời Trang Cao Cấp</title>
 </head>
 <body style="font-family:sans-serif;padding:24px;background:#f5f5f5;margin:0">
 
@@ -119,8 +119,12 @@ app.get('/', (req, res) => {
     </div>
   </div>
 
-  <h1 style="color:#222;margin-bottom:4px">👗 Fashion Shop</h1>
-  <p style="color:#888;margin:0 0 20px">Thời trang chất lượng cao</p>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+    <img src="https://fashion-products-images.s3.ap-southeast-1.amazonaws.com/9b2bfa445576e42a1b7f5d58b71e6624.jpg"
+      style="width:60px;height:60px;object-fit:contain;border-radius:50%">
+    <h1 style="color:#222;margin:0">Thời Trang Cao Cấp</h1>
+  </div>
+  <p style="color:#888;margin:0 0 20px">Phong cách thời trang nam châu Á 2026</p>
   <div style="margin-bottom:24px">${nav}</div>
   <div style="display:flex;gap:16px;flex-wrap:wrap">${cards}</div>
 
@@ -170,7 +174,6 @@ app.get('/', (req, res) => {
   });
 });
 
-// ===== PHẦN SỬA: Đẩy đơn hàng vào SQS thay vì lưu thẳng RDS =====
 app.post('/orders', async (req, res) => {
   const { product_id, quantity, total_price, customer_name, phone, email, address } = req.body;
   
