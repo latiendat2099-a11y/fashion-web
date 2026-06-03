@@ -69,50 +69,52 @@ app.get('/', (req, res) => {
             onerror="this.src='https://via.placeholder.com/400'">
         </div>
         <div style="padding: 0 8px;">
-          <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 400; color: #000; font-family: 'Georgia', serif; line-height: 1.4; letter-spacing: 0.2px;">${p.name}</h3>
+          <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 400; color: #000; font-family: 'Playfair Display', 'Georgia', serif; line-height: 1.4; letter-spacing: 0.2px;">${p.name}</h3>
           <div style="font-size: 14px; color: #000; font-weight: 600; margin-bottom: 12px; font-family: 'Montserrat', sans-serif;">
             ${Number(p.price).toLocaleString('vi-VN')} VND
           </div>
-          <button style="background: transparent; border: 1px solid #000; color: #000; padding: 10px 16px; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; width: 100%; font-family: inherit; transition: all 0.3s;" onmouseover="this.style.background='#000'; this.style.color='#fff';" onmouseout="this.style.background='transparent'; this.style.color='#000';">
+          <button style="background: transparent; border: 1px solid #000; color: #000; padding: 10px 16px; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; width: 100%; font-family: 'Montserrat', sans-serif; transition: all 0.3s;" onmouseover="this.style.background='#000'; this.style.color='#fff';" onmouseout="this.style.background='transparent'; this.style.color='#000';">
             🛒 Đặt hàng
           </button>
         </div>
-      </div>`).join('') : `<div style="width:100%; text-align:center; color:#888; font-family:'Georgia',serif; padding: 60px 0; font-style: italic;">Không tìm thấy sản phẩm nào phù hợp.</div>`;
+      </div>`).join('') : `<div style="width:100%; text-align:center; color:#888; font-family:'Playfair Display', 'Georgia', serif; padding: 60px 0; font-style: italic;">Không tìm thấy sản phẩm nào phù hợp.</div>`;
 
     res.send(`<!DOCTYPE html>
-<html><head>
+<html>
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>THE MOON - Thời Trang Nam Cao Cấp</title>
-  <style>
-  /* Gọi trực tiếp qua thẻ link hoặc font-family dự phòng chuẩn Luxury */
-  body { 
-    font-family: "Montserrat", "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji"; 
-    margin: 0; 
-    padding: 0; 
-    background-color: #ffffff; 
-    color: #000; 
-    -webkit-font-smoothing: antialiased; 
-    -moz-osx-font-smoothing: grayscale;
-  }
   
-  /* Đảm bảo các tiêu đề tiếng Việt dùng font serif sang trọng và không bao giờ lỗi dấu */
-  h1, h2, h3, .brand-title {
-    font-family: "Playfair Display", "Georgia", "Times New Roman", serif !important;
-  }
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 
-  input#search-input:focus-visible, input#search-input:focus {
-    outline: none !important;
-    box-shadow: none !important;
-  }
-  
-  input:focus, textarea:focus { outline: 1px solid #000; }
-  #sidebar-menu { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background: white; z-index: 1000; box-shadow: 4px 0 30px rgba(0,0,0,0.05); transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1); padding: 30px 0; box-sizing: border-box; }
-  #sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); z-index: 999; display: none; backdrop-filter: blur(2px); }
-</style>
-   
+  <style>
+    body { 
+      font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; 
+      margin: 0; 
+      padding: 0; 
+      background-color: #ffffff; 
+      color: #000; 
+      -webkit-font-smoothing: antialiased; 
+      -moz-osx-font-smoothing: grayscale;
+    }
     
-    </head>
+    h1, h2, h3, .brand-title {
+      font-family: "Playfair Display", "Georgia", "Times New Roman", serif !important;
+    }
+
+    input#search-input:focus-visible, input#search-input:focus {
+      outline: none !important;
+      box-shadow: none !important;
+    }
+    
+    input:focus, textarea:focus { outline: 1px solid #000; }
+    #sidebar-menu { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background: white; z-index: 1000; box-shadow: 4px 0 30px rgba(0,0,0,0.05); transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1); padding: 30px 0; box-sizing: border-box; }
+    #sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); z-index: 999; display: none; backdrop-filter: blur(2px); }
+  </style>
+</head>
 <body>
 
   <div id="sidebar-overlay" onclick="toggleMenu(false)"></div>
@@ -128,34 +130,34 @@ app.get('/', (req, res) => {
 
   <div id="contact-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:999; align-items:center; justify-content:center; backdrop-filter: blur(4px);" onclick="document.getElementById('contact-modal').style.display='none'">
     <div style="background:white; padding:48px 40px; width:400px; max-width:90%; border: 1px solid #eaeaea; text-align: center;" onclick="event.stopPropagation()">
-      <h3 style="font-family: 'Georgia', serif; font-size: 22px; font-weight: normal; margin-top: 0; margin-bottom: 28px; letter-spacing: 0.5px;">Thông tin liên hệ</h3>
+      <h3 style="font-family: 'Playfair Display', serif; font-size: 22px; font-weight: normal; margin-top: 0; margin-bottom: 28px; letter-spacing: 0.5px;">Thông tin liên hệ</h3>
       
-      <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 18px 0; padding: 10px; background: #fafafa;">
+      <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 18px 0; padding: 12px; background: #fafafa;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-        <span style="font-size: 14px; color: #222; font-weight: 400; letter-spacing: 0.3px;">latiendat2099@gmail.com</span>
+        <span style="font-size: 14px; color: #222; font-weight: 400; letter-spacing: 0.3px; font-family: 'Montserrat', sans-serif;">latiendat2099@gmail.com</span>
       </div>
       
-      <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 18px 0; padding: 10px; background: #fafafa;">
+      <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 18px 0; padding: 12px; background: #fafafa;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-        <span style="font-size: 14px; color: #222; font-weight: 500; letter-spacing: 0.5px;">0358865786</span>
+        <span style="font-size: 14px; color: #222; font-weight: 500; letter-spacing: 0.5px; font-family: 'Montserrat', sans-serif;">0358865786</span>
       </div>
 
-      <button onclick="document.getElementById('contact-modal').style.display='none'" style="margin-top: 24px; padding: 12px 40px; background: #000; color: white; border: none; cursor: pointer; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500; width: 100%;">Đóng</button>
+      <button onclick="document.getElementById('contact-modal').style.display='none'" style="margin-top: 24px; padding: 12px 40px; background: #000; color: white; border: none; cursor: pointer; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500; width: 100%; font-family: 'Montserrat', sans-serif;">Đóng</button>
     </div>
   </div>
 
   <div id="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:999; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
     <div style="background:white; padding:44px 40px; width:420px; max-width:90%; box-shadow: 0 10px 40px rgba(0,0,0,0.08);">
-      <h2 id="modal-title" style="margin:0 0 24px; color:#000; font-weight:400; font-size:20px; font-family: 'Georgia', serif; border-bottom: 1px solid #eee; padding-bottom: 14px;">Đặt hàng</h2>
+      <h2 id="modal-title" style="margin:0 0 24px; color:#000; font-weight:400; font-size:20px; font-family: 'Playfair Display', serif; border-bottom: 1px solid #eee; padding-bottom: 14px;">Đặt hàng</h2>
       <input id="inp-name" placeholder="Họ và tên *" style="width:100%; padding:14px; margin:8px 0; border:1px solid #ddd; box-sizing:border-box; font-size:14px; font-family:inherit;">
       <input id="inp-phone" placeholder="Số điện thoại *" style="width:100%; padding:14px; margin:8px 0; border:1px solid #ddd; box-sizing:border-box; font-size:14px; font-family:inherit;">
       <input id="inp-email" placeholder="Email *" style="width:100%; padding:14px; margin:8px 0; border:1px solid #ddd; box-sizing:border-box; font-size:14px; font-family:inherit;">
       <textarea id="inp-addr" placeholder="Địa chỉ giao hàng *" style="width:100%; padding:14px; margin:8px 0; border:1px solid #ddd; box-sizing:border-box; height:80px; font-size:14px; font-family:inherit; resize: none;"></textarea>
       <div style="display:flex; gap:12px; margin-top:28px;">
-        <button onclick="submitOrder()" style="flex:1; padding:14px; background:#000; color:white; border:none; cursor:pointer; font-size:12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">
+        <button onclick="submitOrder()" style="flex:1; padding:14px; background:#000; color:white; border:none; cursor:pointer; font-size:12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 500; font-family: 'Montserrat', sans-serif;">
           ✅ Xác nhận đặt hàng
         </button>
-        <button onclick="closeModal()" style="padding:14px 20px; background:#f5f5f5; border:none; color: #555; cursor:pointer; font-size:12px; text-transform: uppercase; letter-spacing: 0.5px;">Huỷ</button>
+        <button onclick="closeModal()" style="padding:14px 20px; background:#f5f5f5; border:none; color: #555; cursor:pointer; font-size:12px; text-transform: uppercase; letter-spacing: 0.5px; font-family: 'Montserrat', sans-serif;">Huỷ</button>
       </div>
     </div>
   </div>
@@ -163,9 +165,9 @@ app.get('/', (req, res) => {
   <div id="success" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:999; align-items:center; justify-content:center;">
     <div style="background:white; padding:44px; text-align:center; width:380px; max-width:90%;">
       <div style="font-size:40px; margin-bottom: 16px;">🎉</div>
-      <h2 style="color:#000; margin:0 0 12px; font-family: 'Georgia', serif; font-weight: normal; font-size: 22px;">Đặt hàng thành công!</h2>
-      <p id="success-msg" style="color:#555; font-size: 14px; line-height:1.6; margin-bottom: 24px; font-family: 'Georgia', serif; font-style: italic;"></p>
-      <button onclick="document.getElementById('success').style.display='none'" style="padding:12px 40px; background:#000; color:white; border:none; cursor:pointer; font-size:12px; text-transform: uppercase; letter-spacing: 1.5px;">
+      <h2 style="color:#000; margin:0 0 12px; font-family: 'Playfair Display', serif; font-weight: normal; font-size: 22px;">Đặt hàng thành công!</h2>
+      <p id="success-msg" style="color:#555; font-size: 14px; line-height:1.6; margin-bottom: 24px; font-family: 'Playfair Display', serif; font-style: italic;"></p>
+      <button onclick="document.getElementById('success').style.display='none'" style="padding:12px 40px; background:#000; color:white; border:none; cursor:pointer; font-size:12px; text-transform: uppercase; letter-spacing: 1.5px; font-family: 'Montserrat', sans-serif;">
         Đóng
       </button>
     </div>
@@ -174,7 +176,7 @@ app.get('/', (req, res) => {
   <header style="border-bottom: 1px solid #f0f0f0; padding: 24px 40px; display: flex; align-items: center; justify-content: space-between; position: relative; background: #fff;">
     
     <div style="display: flex; align-items: center; gap: 28px; flex: 1;">
-      <span onclick="toggleMenu(true)" style="cursor:pointer; font-size: 12px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; user-select: none; display: flex; align-items: center; gap: 6px;">
+      <span onclick="toggleMenu(true)" style="cursor:pointer; font-size: 12px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; user-select: none; display: flex; align-items: center; gap: 6px; font-family: 'Montserrat', sans-serif;">
         <span>☰</span> Menu
       </span>
       
@@ -186,7 +188,7 @@ app.get('/', (req, res) => {
           onkeyup="if(event.key === 'Enter') executeSearch()"
           onfocus="document.getElementById('search-container').style.borderBottom='1px solid #000'"
           onblur="document.getElementById('search-container').style.borderBottom='1px solid #e0e0e0'"
-          style="border: none; font-size: 12px; font-family: inherit; width: 130px; background: transparent; letter-spacing: 0.5px; padding: 0;">
+          style="border: none; font-size: 12px; font-family: 'Montserrat', sans-serif; width: 130px; background: transparent; letter-spacing: 0.5px; padding: 0;">
         ${search ? `<span onclick="clearSearch()" style="cursor:pointer; font-size:11px; color:#aaa; margin-left:6px; font-weight:bold;">✕</span>` : ''}
       </div>
     </div>
@@ -199,7 +201,7 @@ app.get('/', (req, res) => {
       </h1>
     </div>
 
-    <div style="flex: 1; display: flex; justify-content: flex-end; font-size: 12px; letter-spacing: 1px; text-transform: uppercase;">
+    <div style="flex: 1; display: flex; justify-content: flex-end; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; font-family: 'Montserrat', sans-serif;">
       <span onclick="document.getElementById('contact-modal').style.display='flex'" style="cursor:pointer; font-weight: 500; border-bottom: 1px solid transparent; transition: all 0.3s;" onmouseover="this.style.borderBottom='1px solid #000'" onmouseout="this.style.borderBottom='1px solid transparent'">
         Liên hệ với chúng tôi
       </span>
@@ -208,10 +210,10 @@ app.get('/', (req, res) => {
 
   <main style="max-width: 1400px; margin: 0 auto; padding: 40px;">
     <div style="text-align: center; margin: 40px 0 60px 0;">
-      <h2 style="font-family: 'Georgia', serif; font-size: 26px; font-weight: normal; margin-bottom: 10px; letter-spacing: 1px; color: #111;">
+      <h2 style="font-family: 'Playfair Display', serif; font-size: 26px; font-weight: normal; margin-bottom: 10px; letter-spacing: 1px; color: #111;">
         Thời trang nam cao cấp 2026
       </h2>
-      ${cat !== 'all' || search ? `<p style="color: #666; font-size: 13px; margin-top: 14px; font-family:'Georgia',serif; font-style:italic;">Đang hiển thị: <strong>${CATS[cat] || cat}</strong> ${search ? ` chứa từ khóa "${search}"` : ''} | <a href="/" style="color:#000; font-family:'Montserrat',sans-serif; text-transform:uppercase; font-size:11px; margin-left:10px; letter-spacing:1px; font-style:normal; font-weight:600; text-decoration:none; border-bottom:1px solid #000;">Xóa bộ lọc</a></p>` : ''}
+      ${cat !== 'all' || search ? `<p style="color: #666; font-size: 13px; margin-top: 14px; font-family:'Playfair Display', serif; font-style:italic;">Đang hiển thị: <strong>${CATS[cat] || cat}</strong> ${search ? ` chứa từ khóa "${search}"` : ''} | <a href="/" style="color:#000; font-family:'Montserrat',sans-serif; text-transform:uppercase; font-size:11px; margin-left:10px; letter-spacing:1px; font-style:normal; font-weight:600; text-decoration:none; border-bottom:1px solid #000;">Xóa bộ lọc</a></p>` : ''}
     </div>
 
     <div style="display: flex; gap: 32px; flex-wrap: wrap; justify-content: flex-start;">
@@ -287,7 +289,8 @@ app.get('/', (req, res) => {
       });
     }
   </script>
-</body></html>`);
+</body>
+</html>`);
   });
 });
 
