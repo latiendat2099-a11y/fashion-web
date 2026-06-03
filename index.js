@@ -85,20 +85,34 @@ app.get('/', (req, res) => {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>THE MOON - Thời Trang Nam Cao Cấp</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap');
-    body { font-family: 'Montserrat', sans-serif; margin: 0; padding: 0; background-color: #ffffff; color: #000; -webkit-font-smoothing: antialiased; }
+  /* Gọi trực tiếp qua thẻ link hoặc font-family dự phòng chuẩn Luxury */
+  body { 
+    font-family: "Montserrat", "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji"; 
+    margin: 0; 
+    padding: 0; 
+    background-color: #ffffff; 
+    color: #000; 
+    -webkit-font-smoothing: antialiased; 
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Đảm bảo các tiêu đề tiếng Việt dùng font serif sang trọng và không bao giờ lỗi dấu */
+  h1, h2, h3, .brand-title {
+    font-family: "Playfair Display", "Georgia", "Times New Roman", serif !important;
+  }
+
+  input#search-input:focus-visible, input#search-input:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  
+  input:focus, textarea:focus { outline: 1px solid #000; }
+  #sidebar-menu { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background: white; z-index: 1000; box-shadow: 4px 0 30px rgba(0,0,0,0.05); transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1); padding: 30px 0; box-sizing: border-box; }
+  #sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); z-index: 999; display: none; backdrop-filter: blur(2px); }
+</style>
+   
     
-    /* Thiết lập không hiện khung viền hình chữ nhật khi nhấn vào ô tìm kiếm */
-    input#search-input:focus-visible, input#search-input:focus {
-      outline: none !important;
-      box-shadow: none !important;
-    }
-    
-    input:focus, textarea:focus { outline: 1px solid #000; }
-    #sidebar-menu { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background: white; z-index: 1000; box-shadow: 4px 0 30px rgba(0,0,0,0.05); transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1); padding: 30px 0; box-sizing: border-box; }
-    #sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); z-index: 999; display: none; backdrop-filter: blur(2px); }
-  </style>
-</head>
+    </head>
 <body>
 
   <div id="sidebar-overlay" onclick="toggleMenu(false)"></div>
