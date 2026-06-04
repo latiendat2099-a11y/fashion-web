@@ -18,7 +18,6 @@ db.connect(err => {
   console.log('Kết nối DB thành công!');
 });
 
-// Cấu trúc danh mục đa cấp: Đã rút gọn GIÀY DÉP chỉ còn Giày và Dép
 const CATEGORY_STRUCTURE = {
   all: { label: 'Tất cả sản phẩm', sub: {} },
   ao: {
@@ -72,7 +71,6 @@ app.get('/', (req, res) => {
   let sql = 'SELECT * FROM products WHERE 1=1';
   let params = [];
 
-  // Lắp logic xử lý danh mục chuẩn khớp với DB của bạn
   if (cat !== 'all') {
     if (CATEGORY_STRUCTURE[cat] && Object.keys(CATEGORY_STRUCTURE[cat].sub).length > 0) {
       sql += ' AND subcategory = ?';
@@ -205,8 +203,8 @@ app.get('/', (req, res) => {
       <input id="inp-email" placeholder="Email *" style="width:100%; padding:14px; margin:8px 0; border:1px solid #ddd; box-sizing:border-box; font-size:14px; font-family:inherit;">
       <textarea id="inp-addr" placeholder="Địa chỉ giao hàng *" style="width:100%; padding:14px; margin:8px 0; border:1px solid #ddd; box-sizing:border-box; height:80px; font-size:14px; font-family:inherit; resize: none;"></textarea>
       <div style="display:flex; gap:12px; margin-top:28px;">
-        <button onclick="submitOrder()" style="flex:1; padding:14px; background:#000; color:white; border:none; cursor:pointer; font-size:12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 500; font-family: 'Montserrat', sans-serif;">
-          ✅ Xác nhận đặt hàng
+        <button onclick="submitOrder()" style="flex:1; padding:14px; background:#000; color:white; border:none; cursor:pointer; font-size:12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500; font-family: 'Montserrat', sans-serif;">
+          XÁC NHẬN ĐẶT HÀNG
         </button>
         <button onclick="closeModal()" style="padding:14px 20px; background:#f5f5f5; border:none; color: #555; cursor:pointer; font-size:12px; text-transform: uppercase; letter-spacing: 0.5px; font-family: 'Montserrat', sans-serif;">Huỷ</button>
       </div>
