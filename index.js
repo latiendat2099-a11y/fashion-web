@@ -18,14 +18,52 @@ db.connect(err => {
   console.log('Kết nối DB thành công!');
 });
 
-const CATS = {
-  all: 'Tất cả',
-  ao: 'Áo',
-  quan: 'Quần',
-  giay: 'Giày',
-  dep: 'Dép',
-  balo: 'Balo'
+// Cấu trúc danh mục đa cấp: Đã rút gọn GIÀY DÉP chỉ còn Giày và Dép
+const CATEGORY_STRUCTURE = {
+  all: { label: 'Tất cả sản phẩm', sub: {} },
+  ao: {
+    label: 'ÁO',
+    sub: {
+      'ao-thun': 'Áo thun',
+      'ao-polo': 'Áo polo',
+      'ao-so-mi': 'Áo sơ mi',
+      'ao-khoac': 'Áo khoác'
+    }
+  },
+  quan: {
+    label: 'QUẦN',
+    sub: {
+      'quan-jean': 'Quần jean',
+      'quan-kaki': 'Quần kaki',
+      'quan-short': 'Quần short'
+    }
+  },
+  'giay-dep': {
+    label: 'GIÀY DÉP',
+    sub: {
+      'giay': 'Giày',
+      'dep': 'Dép'
+    }
+  },
+  'do-the-thao': {
+    label: 'ĐỒ THỂ THAO',
+    sub: {
+      'ao-the-thao': 'Áo thể thao',
+      'quan-the-thao': 'Quần thể thao'
+    }
+  }
 };
+
+function getCategoryLabel(catKey) {
+  if (catKey === 'all') return 'Tất cả sản phẩm';
+  for (const [parentKey, parentValue] of Object.entries(CATEGORY_STRUCTURE)) {
+    if (parentKey === catKey) return parentValue.label;
+    if (parentValue.sub && parentValue.sub[catKey]) {
+      return parentValue.sub[catKey];
+    }
+  }
+  return catKey;
+}
 
 app.get('/', (req, res) => {
   const cat = req.query.cat || 'all';
@@ -35,8 +73,14 @@ app.get('/', (req, res) => {
   let params = [];
 
   if (cat !== 'all') {
-    sql += ' AND category = ?';
-    params.push(cat);
+    if (CATEGORY_STRUCTURE[cat] && Object.keys(CATEGORY_STRUCTURE[cat].sub).length > 0) {
+      const subCats = Object.keys(CATEGORY_STRUCTURE[cat].sub);
+      sql += ` AND category IN (${subCats.map(() => '?').join(',')})`;
+      params.push(...subCats);
+    } else {
+      sql += ' AND category = ?';
+      params.push(cat);
+    }
   }
 
   if (search.trim() !== '') {
@@ -47,20 +91,42 @@ app.get('/', (req, res) => {
   db.query(sql, params, (err, rows) => {
     if (err) return res.send('Lỗi: ' + err.message);
 
-    const navItems = Object.entries(CATS).map(([k, v]) => `
-      <a href="/?cat=${k}${search ? '&search=' + encodeURIComponent(search) : ''}" style="
-        text-decoration: none;
-        color: ${cat === k ? '#000' : '#666'};
-        font-weight: ${cat === k ? '600' : '400'};
-        font-size: 14px;
-        letter-spacing: 1px;
-        padding: 12px 24px;
-        display: block;
-        border-left: ${cat === k ? '2px solid #000' : '2px solid transparent'};
-        background: ${cat === k ? '#f9f9f9' : 'transparent'};
-        transition: all 0.3s ease;">
-        ${v}
-      </a>`).join('');
+    let navItemsHtml = `
+      <a href="/?cat=all${search ? '&search=' + encodeURIComponent(search) : ''}" style="
+        text-decoration: none; color: ${cat === 'all' ? '#000' : '#555'};
+        font-weight: ${cat === 'all' ? '600' : '400'}; font-size: 13px;
+        letter-spacing: 1px; padding: 14px 24px; display: block;
+        text-transform: uppercase; border-left: ${cat === 'all' ? '2px solid #000' : '2px solid transparent'};
+        background: ${cat === 'all' ? '#f9f9f9' : 'transparent'}; transition: all 0.2s;">
+        Tất cả sản phẩm
+      </a>`;
+
+    Object.entries(CATEGORY_STRUCTURE).forEach(([parentKey, parentValue]) => {
+      if (parentKey === 'all') return;
+      
+      const isParentActive = cat === parentKey || (parentValue.sub && Object.keys(parentValue.sub).includes(cat));
+
+      navItemsHtml += `
+        <div style="border-bottom: 1px solid #fcfcfc;">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; background: ${isParentActive ? '#fcfcfc' : 'transparent'};">
+            <a href="/?cat=${parentKey}${search ? '&search=' + encodeURIComponent(search) : ''}" style="
+              text-decoration: none; color: #000; font-weight: 500; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase;">
+              ${parentValue.label}
+            </a>
+          </div>
+          <div style="padding-bottom: 8px; padding-left: 12px;">
+            ${Object.entries(parentValue.sub).map(([subKey, subLabel]) => `
+              <a href="/?cat=${subKey}${search ? '&search=' + encodeURIComponent(search) : ''}" style="
+                text-decoration: none; color: ${cat === subKey ? '#000' : '#666'};
+                font-weight: ${cat === subKey ? '600' : '400'}; font-size: 13px;
+                padding: 8px 24px; display: block; letter-spacing: 0.5px;
+                border-left: ${cat === subKey ? '2px solid #000' : '2px solid transparent'};
+                transition: all 0.2s;">
+                • ${subLabel}
+              </a>`).join('')}
+          </div>
+        </div>`;
+    });
 
     const cards = rows.length > 0 ? rows.map(p => `
       <div style="flex: 1 1 calc(25% - 24px); max-width: calc(25% - 24px); min-width: 220px; box-sizing: border-box; text-align: center; margin-bottom: 40px; cursor: pointer;" onclick="openModal(${p.id},'${p.name}',${p.price})">
@@ -93,25 +159,13 @@ app.get('/', (req, res) => {
   <style>
     body { 
       font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; 
-      margin: 0; 
-      padding: 0; 
-      background-color: #ffffff; 
-      color: #000; 
-      -webkit-font-smoothing: antialiased; 
-      -moz-osx-font-smoothing: grayscale;
+      margin: 0; padding: 0; background-color: #ffffff; color: #000; 
+      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
     }
-    
-    h1, h2, h3, .brand-title {
-      font-family: "Playfair Display", "Georgia", "Times New Roman", serif !important;
-    }
-
-    input#search-input:focus-visible, input#search-input:focus {
-      outline: none !important;
-      box-shadow: none !important;
-    }
-    
+    h1, h2, h3, .brand-title { font-family: "Playfair Display", "Georgia", serif !important; }
+    input#search-input:focus-visible, input#search-input:focus { outline: none !important; box-shadow: none !important; }
     input:focus, textarea:focus { outline: 1px solid #000; }
-    #sidebar-menu { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background: white; z-index: 1000; box-shadow: 4px 0 30px rgba(0,0,0,0.05); transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1); padding: 30px 0; box-sizing: border-box; }
+    #sidebar-menu { position: fixed; top: 0; left: -320px; width: 300px; height: 100%; background: white; z-index: 1000; box-shadow: 4px 0 30px rgba(0,0,0,0.05); transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1); padding: 30px 0; box-sizing: border-box; overflow-y: auto; }
     #sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); z-index: 999; display: none; backdrop-filter: blur(2px); }
   </style>
 </head>
@@ -123,25 +177,22 @@ app.get('/', (req, res) => {
       <span style="font-weight: 500; font-size: 14px; letter-spacing: 2px; text-transform: uppercase;">Danh mục</span>
       <span onclick="toggleMenu(false)" style="cursor: pointer; font-size: 18px; font-weight: 300; color:#666;">✕</span>
     </div>
-    <div style="margin-top: 20px;">
-      ${navItems}
+    <div style="margin-top: 15px;">
+      ${navItemsHtml}
     </div>
   </div>
 
   <div id="contact-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:999; align-items:center; justify-content:center; backdrop-filter: blur(4px);" onclick="document.getElementById('contact-modal').style.display='none'">
     <div style="background:white; padding:48px 40px; width:400px; max-width:90%; border: 1px solid #eaeaea; text-align: center;" onclick="event.stopPropagation()">
       <h3 style="font-family: 'Playfair Display', serif; font-size: 22px; font-weight: normal; margin-top: 0; margin-bottom: 28px; letter-spacing: 0.5px;">Thông tin liên hệ</h3>
-      
       <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 18px 0; padding: 12px; background: #fafafa;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
         <span style="font-size: 14px; color: #222; font-weight: 400; letter-spacing: 0.3px; font-family: 'Montserrat', sans-serif;">latiendat2099@gmail.com</span>
       </div>
-      
       <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 18px 0; padding: 12px; background: #fafafa;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
         <span style="font-size: 14px; color: #222; font-weight: 500; letter-spacing: 0.5px; font-family: 'Montserrat', sans-serif;">0358865786</span>
       </div>
-
       <button onclick="document.getElementById('contact-modal').style.display='none'" style="margin-top: 24px; padding: 12px 40px; background: #000; color: white; border: none; cursor: pointer; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500; width: 100%; font-family: 'Montserrat', sans-serif;">Đóng</button>
     </div>
   </div>
@@ -167,19 +218,15 @@ app.get('/', (req, res) => {
       <div style="font-size:40px; margin-bottom: 16px;">🎉</div>
       <h2 style="color:#000; margin:0 0 12px; font-family: 'Playfair Display', serif; font-weight: normal; font-size: 22px;">Đặt hàng thành công!</h2>
       <p id="success-msg" style="color:#555; font-size: 14px; line-height:1.6; margin-bottom: 24px; font-family: 'Playfair Display', serif; font-style: italic;"></p>
-      <button onclick="document.getElementById('success').style.display='none'" style="padding:12px 40px; background:#000; color:white; border:none; cursor:pointer; font-size:12px; text-transform: uppercase; letter-spacing: 1.5px; font-family: 'Montserrat', sans-serif;">
-        Đóng
-      </button>
+      <button onclick="document.getElementById('success').style.display='none'" style="padding:12px 40px; background:#000; color:white; border:none; cursor:pointer; font-size:12px; text-transform: uppercase; letter-spacing: 1.5px; font-family: 'Montserrat', sans-serif;">Đóng</button>
     </div>
   </div>
 
   <header style="border-bottom: 1px solid #f0f0f0; padding: 24px 40px; display: flex; align-items: center; justify-content: space-between; position: relative; background: #fff;">
-    
     <div style="display: flex; align-items: center; gap: 28px; flex: 1;">
       <span onclick="toggleMenu(true)" style="cursor:pointer; font-size: 12px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; user-select: none; display: flex; align-items: center; gap: 6px; font-family: 'Montserrat', sans-serif;">
         <span>☰</span> Menu
       </span>
-      
       <div style="display: flex; align-items: center; border-bottom: 1px solid #e0e0e0; padding: 4px 0; transition: border-color 0.3s;" id="search-container">
         <span style="font-size: 13px; margin-right: 8px; cursor: pointer; display: flex; align-items: center;" onclick="executeSearch()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -194,8 +241,7 @@ app.get('/', (req, res) => {
     </div>
     
     <div style="display: flex; align-items: center; gap: 14px; justify-content: center; flex: 1;">
-      <img src="https://fashion-products-images.s3.ap-southeast-1.amazonaws.com/logoo.png"
-        style="width:30px; height:30px; object-fit:contain; border-radius:50%">
+      <img src="https://fashion-products-images.s3.ap-southeast-1.amazonaws.com/logoo.png" style="width:30px; height:30px; object-fit:contain; border-radius:50%">
       <h1 style="font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 400; letter-spacing: 7px; margin: 0; text-transform: uppercase; white-space: nowrap;">
         THE MOON
       </h1>
@@ -213,7 +259,10 @@ app.get('/', (req, res) => {
       <h2 style="font-family: 'Playfair Display', serif; font-size: 26px; font-weight: normal; margin-bottom: 10px; letter-spacing: 1px; color: #111;">
         Thời trang nam cao cấp 2026
       </h2>
-      ${cat !== 'all' || search ? `<p style="color: #666; font-size: 13px; margin-top: 14px; font-family:'Playfair Display', serif; font-style:italic;">Đang hiển thị: <strong>${CATS[cat] || cat}</strong> ${search ? ` chứa từ khóa "${search}"` : ''} | <a href="/" style="color:#000; font-family:'Montserrat',sans-serif; text-transform:uppercase; font-size:11px; margin-left:10px; letter-spacing:1px; font-style:normal; font-weight:600; text-decoration:none; border-bottom:1px solid #000;">Xóa bộ lọc</a></p>` : ''}
+      <p style="color: #666; font-size: 13px; margin-top: 14px; font-family:'Playfair Display', serif; font-style:italic;">
+        Đang hiển thị: <strong>${getCategoryLabel(cat)}</strong> ${search ? ` chứa từ khóa "${search}"` : ''} 
+        ${cat !== 'all' || search ? ` | <a href="/" style="color:#000; font-family:'Montserrat',sans-serif; text-transform:uppercase; font-size:11px; margin-left:10px; letter-spacing:1px; font-style:normal; font-weight:600; text-decoration:none; border-bottom:1px solid #000;">Xóa bộ lọc</a>` : ''}
+      </p>
     </div>
 
     <div style="display: flex; gap: 32px; flex-wrap: wrap; justify-content: flex-start;">
@@ -231,7 +280,7 @@ app.get('/', (req, res) => {
         sidebar.style.left = '0px';
         overlay.style.display = 'block';
       } else {
-        sidebar.style.left = '-300px';
+        sidebar.style.left = '-320px';
         overlay.style.display = 'none';
       }
     }
@@ -296,7 +345,6 @@ app.get('/', (req, res) => {
 
 app.post('/orders', async (req, res) => {
   const { product_id, quantity, total_price, customer_name, phone, email, address } = req.body;
-  
   try {
     await sqs.send(new SendMessageCommand({
       QueueUrl: 'https://sqs.ap-southeast-1.amazonaws.com/054653532752/order-queue',
