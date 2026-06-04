@@ -72,11 +72,11 @@ app.get('/', (req, res) => {
   let sql = 'SELECT * FROM products WHERE 1=1';
   let params = [];
 
+  // Lắp logic xử lý danh mục chuẩn khớp với DB của bạn
   if (cat !== 'all') {
     if (CATEGORY_STRUCTURE[cat] && Object.keys(CATEGORY_STRUCTURE[cat].sub).length > 0) {
-      const subCats = Object.keys(CATEGORY_STRUCTURE[cat].sub);
-      sql += ` AND category IN (${subCats.map(() => '?').join(',')})`;
-      params.push(...subCats);
+      sql += ' AND subcategory = ?';
+      params.push(cat);
     } else {
       sql += ' AND category = ?';
       params.push(cat);
@@ -154,7 +154,7 @@ app.get('/', (req, res) => {
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 
   <style>
     body { 
@@ -213,19 +213,18 @@ app.get('/', (req, res) => {
     </div>
   </div>
 
-  <div id="success" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:999; align-items:center; justify-content:center;">
-    <div style="background:white; padding:44px; text-align:center; width:380px; max-width:90%;">
-      <div style="font-size:40px; margin-bottom: 16px;">🎉</div>
-      <h2 style="color:#000; margin:0 0 12px; font-family: 'Playfair Display', serif; font-weight: normal; font-size: 22px;">Đặt hàng thành công!</h2>
-      <p id="success-msg" style="color:#555; font-size: 14px; line-height:1.6; margin-bottom: 24px; font-family: 'Playfair Display', serif; font-style: italic;"></p>
-      <button onclick="document.getElementById('success').style.display='none'" style="padding:12px 40px; background:#000; color:white; border:none; cursor:pointer; font-size:12px; text-transform: uppercase; letter-spacing: 1.5px; font-family: 'Montserrat', sans-serif;">Đóng</button>
+  <div id="success" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:999; align-items:center; justify-content:center; backdrop-filter: blur(4px);">
+    <div style="background:white; padding:44px; text-align:center; width:380px; max-width:90%; box-shadow: 0 10px 40px rgba(0,0,0,0.05); border: 1px solid #f0f0f0;">
+      <h2 style="color:#000; margin:0 0 16px; font-family: 'Playfair Display', serif; font-weight: 500; font-size: 22px; letter-spacing: 0.5px;">Đặt hàng thành công!</h2>
+      <p id="success-msg" style="color:#555; font-size: 14px; line-height:1.6; margin-bottom: 28px; font-family: 'Montserrat', sans-serif; font-weight: 300;"></p>
+      <button onclick="document.getElementById('success').style.display='none'" style="padding:12px 40px; background:#000; color:white; border:none; cursor:pointer; font-size:11px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500; width: 100%; font-family: 'Montserrat', sans-serif;">Đóng</button>
     </div>
   </div>
 
   <header style="border-bottom: 1px solid #f0f0f0; padding: 24px 40px; display: flex; align-items: center; justify-content: space-between; position: relative; background: #fff;">
     <div style="display: flex; align-items: center; gap: 28px; flex: 1;">
       <span onclick="toggleMenu(true)" style="cursor:pointer; font-size: 12px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; user-select: none; display: flex; align-items: center; gap: 6px; font-family: 'Montserrat', sans-serif;">
-        <span>☰</span> Menu
+        <span>☰</span> Danh mục
       </span>
       <div style="display: flex; align-items: center; border-bottom: 1px solid #e0e0e0; padding: 4px 0; transition: border-color 0.3s;" id="search-container">
         <span style="font-size: 13px; margin-right: 8px; cursor: pointer; display: flex; align-items: center;" onclick="executeSearch()">
@@ -254,18 +253,24 @@ app.get('/', (req, res) => {
     </div>
   </header>
 
-  <main style="max-width: 1400px; margin: 0 auto; padding: 40px;">
-    <div style="text-align: center; margin: 40px 0 60px 0;">
-      <h2 style="font-family: 'Playfair Display', serif; font-size: 26px; font-weight: normal; margin-bottom: 10px; letter-spacing: 1px; color: #111;">
+  <main style="max-width: 1400px; margin: 0 auto; padding: 0 40px 40px 40px;">
+    
+    <div style="width: 100%; max-width: 1200px; margin: 30px auto 0 auto; overflow: hidden; border-radius: 4px; box-shadow: 0 12px 35px rgba(0,0,0,0.04);">
+      <img src="https://fashion-products-images.s3.ap-southeast-1.amazonaws.com/afdcbc26-510e-4ccf-aa4d-c9c92d1cc4e5.png" 
+           style="width: 100%; height: auto; display: block; object-fit: cover; max-height: 440px;">
+    </div>
+
+    <div style="text-align: center; margin: 35px 0 55px 0;">
+      <h2 style="font-family: 'Playfair Display', serif; font-size: 25px; font-weight: 500; margin-bottom: 8px; letter-spacing: 1.5px; color: #111111;">
         Thời trang nam cao cấp 2026
       </h2>
-      <p style="color: #666; font-size: 13px; margin-top: 14px; font-family:'Playfair Display', serif; font-style:italic;">
-        Đang hiển thị: <strong>${getCategoryLabel(cat)}</strong> ${search ? ` chứa từ khóa "${search}"` : ''} 
+      <p style="color: #666666; font-size: 13px; margin-top: 12px; font-family:'Playfair Display', serif; font-style:italic; letter-spacing: 0.5px;">
+        Đang hiển thị: <span style="font-family:'Montserrat', sans-serif; font-style: normal; font-weight: 500; color: #000;">${getCategoryLabel(cat)}</span> ${search ? ` chứa từ khóa "${search}"` : ''} 
         ${cat !== 'all' || search ? ` | <a href="/" style="color:#000; font-family:'Montserrat',sans-serif; text-transform:uppercase; font-size:11px; margin-left:10px; letter-spacing:1px; font-style:normal; font-weight:600; text-decoration:none; border-bottom:1px solid #000;">Xóa bộ lọc</a>` : ''}
       </p>
     </div>
 
-    <div style="display: flex; gap: 32px; flex-wrap: wrap; justify-content: flex-start;">
+    <div style="display: flex; gap: 32px; flex-wrap: wrap; justify-content: flex-start; max-width: 1200px; margin: 0 auto;">
       ${cards}
     </div>
   </main>
@@ -333,7 +338,7 @@ app.get('/', (req, res) => {
         closeModal();
         document.getElementById('success-msg').innerHTML =
           'Cảm ơn <b>' + name + '</b>!<br>Đơn hàng <b>' + curProduct.name +
-          '</b> đã được ghi nhận.<br>Chúng tôi sẽ liên hệ qua SĐT <b>' + phone + '</b>.';
+          '</b> đã được ghi nhận thành công.<br>Chúng tôi sẽ sớm liên hệ tới số điện thoại <b>' + phone + '</b>.';
         document.getElementById('success').style.display = 'flex';
       });
     }
