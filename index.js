@@ -13,6 +13,7 @@ const db = mysql.createConnection({
   password: 'Fashion2024!',
   database: 'fashiondb'
 });
+
 db.connect(err => {
   if (err) { console.log(err); return; }
   console.log('Kết nối DB thành công!');
@@ -64,6 +65,7 @@ function getCategoryLabel(catKey) {
   return catKey;
 }
 
+// ENDPOINT HIỂN THỊ GIAO DIỆN WEB (GIỮ NGUYÊN 100%)
 app.get('/', (req, res) => {
   const cat = req.query.cat || 'all';
   const search = req.query.search || ''; 
@@ -176,7 +178,7 @@ app.get('/', (req, res) => {
       <span onclick="toggleMenu(false)" style="cursor: pointer; font-size: 18px; font-weight: 300; color:#666;">✕</span>
     </div>
     <div style="margin-top: 15px;">
-      ${navItemsHtml}
+      \${navItemsHtml}
     </div>
   </div>
 
@@ -233,7 +235,7 @@ app.get('/', (req, res) => {
           onfocus="document.getElementById('search-container').style.borderBottom='1px solid #000'"
           onblur="document.getElementById('search-container').style.borderBottom='1px solid #e0e0e0'"
           style="border: none; font-size: 12px; font-family: 'Montserrat', sans-serif; width: 130px; background: transparent; letter-spacing: 0.5px; padding: 0;">
-        ${search ? `<span onclick="clearSearch()" style="cursor:pointer; font-size:11px; color:#aaa; margin-left:6px; font-weight:bold;">✕</span>` : ''}
+        \${search ? `<span onclick="clearSearch()" style="cursor:pointer; font-size:11px; color:#aaa; margin-left:6px; font-weight:bold;">✕</span>` : ''}
       </div>
     </div>
     
@@ -263,13 +265,13 @@ app.get('/', (req, res) => {
         Thời trang nam cao cấp 2026
       </h2>
       <p style="color: #666666; font-size: 13px; margin-top: 12px; font-family:'Playfair Display', serif; font-style:italic; letter-spacing: 0.5px;">
-        Đang hiển thị: <span style="font-family:'Montserrat', sans-serif; font-style: normal; font-weight: 500; color: #000;">${getCategoryLabel(cat)}</span> ${search ? ` chứa từ khóa "${search}"` : ''} 
-        ${cat !== 'all' || search ? ` | <a href="/" style="color:#000; font-family:'Montserrat',sans-serif; text-transform:uppercase; font-size:11px; margin-left:10px; letter-spacing:1px; font-style:normal; font-weight:600; text-decoration:none; border-bottom:1px solid #000;">Xóa bộ lọc</a>` : ''}
+        Đang hiển thị: <span style="font-family:'Montserrat', sans-serif; font-style: normal; font-weight: 500; color: #000;">\${getCategoryLabel(cat)}</span> \${search ? ` chứa từ khóa "\${search}"` : ''} 
+        \${cat !== 'all' || search ? ` | <a href="/" style="color:#000; font-family:'Montserrat',sans-serif; text-transform:uppercase; font-size:11px; margin-left:10px; letter-spacing:1px; font-style:normal; font-weight:600; text-decoration:none; border-bottom:1px solid #000;">Xóa bộ lọc</a>` : ''}
       </p>
     </div>
 
     <div style="display: flex; gap: 32px; flex-wrap: wrap; justify-content: flex-start; max-width: 1200px; margin: 0 auto;">
-      ${cards}
+      \${cards}
     </div>
   </main>
 
@@ -346,21 +348,48 @@ app.get('/', (req, res) => {
   });
 });
 
+// UPGRADE ENDPOINT /ORDERS: VỪA LƯU MYSQL DATABASE VỪA BẮN AWS SQS
 app.post('/orders', async (req, res) => {
   const { product_id, quantity, total_price, customer_name, phone, email, address } = req.body;
-  try {
-    await sqs.send(new SendMessageCommand({
-      QueueUrl: 'https://sqs.ap-southeast-1.amazonaws.com/054653532752/order-queue',
-      MessageBody: JSON.stringify({
-        product_id, quantity, total_price,
-        customer_name, phone, email, address
-      })
-    }));
-    res.json({ message: 'OK' });
-  } catch (err) {
-    console.error('SQS Error:', err);
-    res.status(500).json({ error: err.message });
-  }
+  
+  // 1. Lưu thông tin vào RDS MySQL Database trước
+  const query = 'INSERT INTO orders (customer_name, phone, email, address, product_id, total_price) VALUES (?, ?, ?, ?, ?, ?)';
+  
+  db.query(query, [customer_name, phone, email, address, product_id, total_price], async (err, result) => {
+    if (err) {
+      console.error('Lỗi MySQL khi lưu Đơn hàng:', err);
+      return res.status(500).json({ error: 'Database error: ' + err.message });
+    }
+    
+    console.log(`===> [DATABASE] Đã lưu đơn hàng thành công, ID: ${result.insertId}`);
+
+    // 2. Sau khi lưu database thành công, tiến hành bắn dữ liệu sang AWS SQS
+    try {
+      await sqs.send(new SendMessageCommand({
+        QueueUrl: 'https://sqs.ap-southeast-1.amazonaws.com/054653532752/order-queue',
+        MessageBody: JSON.stringify({
+          product_id, 
+          quantity, 
+          total_price,
+          customer_name, 
+          phone, 
+          email, 
+          address,
+          order_id: result.insertId // Gửi kèm cả order_id vừa tạo cho Lambda nếu cần
+        })
+      }));
+      console.log('===> [SQS] Đã đẩy message vào order-queue thành công!');
+      
+      // Trả về phản hồi thành công cho Frontend nhận
+      res.json({ message: 'OK', orderId: result.insertId });
+      
+    } catch (sqsErr) {
+      console.error('===> [SQS ERROR] Lỗi không thể đẩy tin nhắn vào hàng đợi SQS:', sqsErr);
+      
+      // Vẫn báo OK cho user vì database đã lưu thành công đơn hàng
+      res.json({ message: 'OK (SQS Failed)', orderId: result.insertId });
+    }
+  });
 });
 
 app.listen(3000, () => console.log('Server chạy tại port 3000'));
