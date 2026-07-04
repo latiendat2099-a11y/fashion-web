@@ -65,7 +65,7 @@ function getCategoryLabel(catKey) {
   return catKey;
 }
 
-// ENDPOINT HIỂN THỊ GIAO DIỆN WEB (GIỮ NGUYÊN 100%)
+// ENDPOINT HIỂN THỊ GIAO DIỆN WEB
 app.get('/', (req, res) => {
   const cat = req.query.cat || 'all';
   const search = req.query.search || ''; 
@@ -178,7 +178,7 @@ app.get('/', (req, res) => {
       <span onclick="toggleMenu(false)" style="cursor: pointer; font-size: 18px; font-weight: 300; color:#666;">✕</span>
     </div>
     <div style="margin-top: 15px;">
-      \${navItemsHtml}
+      ${navItemsHtml}
     </div>
   </div>
 
@@ -235,7 +235,7 @@ app.get('/', (req, res) => {
           onfocus="document.getElementById('search-container').style.borderBottom='1px solid #000'"
           onblur="document.getElementById('search-container').style.borderBottom='1px solid #e0e0e0'"
           style="border: none; font-size: 12px; font-family: 'Montserrat', sans-serif; width: 130px; background: transparent; letter-spacing: 0.5px; padding: 0;">
-        \${search ? `<span onclick="clearSearch()" style="cursor:pointer; font-size:11px; color:#aaa; margin-left:6px; font-weight:bold;">✕</span>` : ''}
+        ${search ? `<span onclick="clearSearch()" style="cursor:pointer; font-size:11px; color:#aaa; margin-left:6px; font-weight:bold;">✕</span>` : ''}
       </div>
     </div>
     
@@ -265,13 +265,13 @@ app.get('/', (req, res) => {
         Thời trang nam cao cấp 2026
       </h2>
       <p style="color: #666666; font-size: 13px; margin-top: 12px; font-family:'Playfair Display', serif; font-style:italic; letter-spacing: 0.5px;">
-        Đang hiển thị: <span style="font-family:'Montserrat', sans-serif; font-style: normal; font-weight: 500; color: #000;">\${getCategoryLabel(cat)}</span> \${search ? ` chứa từ khóa "\${search}"` : ''} 
-        \${cat !== 'all' || search ? ` | <a href="/" style="color:#000; font-family:'Montserrat',sans-serif; text-transform:uppercase; font-size:11px; margin-left:10px; letter-spacing:1px; font-style:normal; font-weight:600; text-decoration:none; border-bottom:1px solid #000;">Xóa bộ lọc</a>` : ''}
+        Đang hiển thị: <span style="font-family:'Montserrat', sans-serif; font-style: normal; font-weight: 500; color: #000;">${getCategoryLabel(cat)}</span> ${search ? ` chứa từ khóa "${search}"` : ''} 
+        ${cat !== 'all' || search ? ` | <a href="/" style="color:#000; font-family:'Montserrat',sans-serif; text-transform:uppercase; font-size:11px; margin-left:10px; letter-spacing:1px; font-style:normal; font-weight:600; text-decoration:none; border-bottom:1px solid #000;">Xóa bộ lọc</a>` : ''}
       </p>
     </div>
 
     <div style="display: flex; gap: 32px; flex-wrap: wrap; justify-content: flex-start; max-width: 1200px; margin: 0 auto;">
-      \${cards}
+      ${cards}
     </div>
   </main>
 
