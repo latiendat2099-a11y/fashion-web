@@ -5,8 +5,10 @@ const { SQSClient, SendMessageCommand } = require('@aws-sdk/client-sqs');
 const app = express();
 app.use(express.json());
 
+// Khởi tạo SQS Client kết nối tới region ap-southeast-1
 const sqs = new SQSClient({ region: 'ap-southeast-1' });
 
+// Kết nối tới Database RDS hiện tại của bạn
 const db = mysql.createConnection({
   host: 'fashion-db.cj20yykym4nu.ap-southeast-1.rds.amazonaws.com',
   user: 'admin',
@@ -15,10 +17,14 @@ const db = mysql.createConnection({
 });
 
 db.connect(err => {
-  if (err) { console.log(err); return; }
+  if (err) { 
+    console.error('Lỗi kết nối DB:', err); 
+    return; 
+  }
   console.log('Kết nối DB thành công!');
 });
 
+// Cấu trúc danh mục sản phẩm của hệ thống
 const CATEGORY_STRUCTURE = {
   all: { label: 'Tất cả sản phẩm', sub: {} },
   ao: {
@@ -65,7 +71,7 @@ function getCategoryLabel(catKey) {
   return catKey;
 }
 
-// ENDPOINT HIỂN THỊ GIAO DIỆN WEB
+// Giao diện trang chủ shop thời trang
 app.get('/', (req, res) => {
   const cat = req.query.cat || 'all';
   const search = req.query.search || ''; 
@@ -89,7 +95,7 @@ app.get('/', (req, res) => {
   }
 
   db.query(sql, params, (err, rows) => {
-    if (err) return res.send('Lỗi: ' + err.message);
+    if (err) return res.send('Lỗi hệ thống: ' + err.message);
 
     let navItemsHtml = `
       <a href="/?cat=all${search ? '&search=' + encodeURIComponent(search) : ''}" style="
@@ -348,48 +354,30 @@ app.get('/', (req, res) => {
   });
 });
 
-// UPGRADE ENDPOINT /ORDERS: VỪA LƯU MYSQL DATABASE VỪA BẮN AWS SQS
+// ROUTE ĐẶT HÀNG: GỬI THẲNG DỮ LIỆU SANG AWS SQS KHÔNG QUA DATABASE
 app.post('/orders', async (req, res) => {
   const { product_id, quantity, total_price, customer_name, phone, email, address } = req.body;
-  
-  // 1. Lưu thông tin vào RDS MySQL Database trước
-  const query = 'INSERT INTO orders (customer_name, phone, email, address, product_id, total_price) VALUES (?, ?, ?, ?, ?, ?)';
-  
-  db.query(query, [customer_name, phone, email, address, product_id, total_price], async (err, result) => {
-    if (err) {
-      console.error('Lỗi MySQL khi lưu Đơn hàng:', err);
-      return res.status(500).json({ error: 'Database error: ' + err.message });
-    }
-    
-    console.log(`===> [DATABASE] Đã lưu đơn hàng thành công, ID: ${result.insertId}`);
 
-    // 2. Sau khi lưu database thành công, tiến hành bắn dữ liệu sang AWS SQS
-    try {
-      await sqs.send(new SendMessageCommand({
-        QueueUrl: 'https://sqs.ap-southeast-1.amazonaws.com/054653532752/order-queue',
-        MessageBody: JSON.stringify({
-          product_id, 
-          quantity, 
-          total_price,
-          customer_name, 
-          phone, 
-          email, 
-          address,
-          order_id: result.insertId // Gửi kèm cả order_id vừa tạo cho Lambda nếu cần
-        })
-      }));
-      console.log('===> [SQS] Đã đẩy message vào order-queue thành công!');
-      
-      // Trả về phản hồi thành công cho Frontend nhận
-      res.json({ message: 'OK', orderId: result.insertId });
-      
-    } catch (sqsErr) {
-      console.error('===> [SQS ERROR] Lỗi không thể đẩy tin nhắn vào hàng đợi SQS:', sqsErr);
-      
-      // Vẫn báo OK cho user vì database đã lưu thành công đơn hàng
-      res.json({ message: 'OK (SQS Failed)', orderId: result.insertId });
-    }
-  });
+  try {
+    await sqs.send(new SendMessageCommand({
+      QueueUrl: 'https://sqs.ap-southeast-1.amazonaws.com/054653532752/order-queue',
+      MessageBody: JSON.stringify({
+        product_id, 
+        quantity, 
+        total_price,
+        customer_name, 
+        phone, 
+        email, 
+        address,
+        order_id: Date.now() // Sinh ID giả bằng mốc thời gian thực tế
+      })
+    }));
+    console.log('===> [SQS] Đã đẩy message trực tiếp vào order-queue thành công!');
+    res.json({ message: 'OK', orderId: Date.now() });
+  } catch (sqsErr) {
+    console.error('===> [SQS ERROR] Lỗi không thể đẩy tin nhắn vào hàng đợi SQS:', sqsErr);
+    res.status(500).json({ error: 'SQS Failed: ' + sqsErr.message });
+  }
 });
 
 app.listen(3000, () => console.log('Server chạy tại port 3000'));
