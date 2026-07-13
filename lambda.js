@@ -1,6 +1,5 @@
 import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
-
 const snsClient = new SNSClient({ region: "ap-southeast-1" });
 const sesClient = new SESClient({ region: "ap-southeast-1" });
 
